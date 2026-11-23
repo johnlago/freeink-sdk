@@ -95,5 +95,14 @@ constexpr uint8_t A4_UC8279C_GRAY3_GRAY_WHITE_FRAMES = 5;
 // white for the extra frames, then holds for the settle frames.
 constexpr uint8_t A4_UC8279C_GRAY3_LIGHT_EXTRA_WHITE_FRAMES = 2;
 constexpr uint8_t A4_UC8279C_GRAY3_LIGHT_SETTLE_FRAMES = 4;
+// Not from stock, two-gray (full-tone) pages, built up from white: the light
+// gray drives black for the light frames, the dark gray for the extra frames
+// on top in a short second refresh, which then holds for the settle frames.
+// More frames are darker. No black pixels -> 0x23[2] = 0x09. The
+// GRAY3_LIGHT_* values above belong to the unused upstream two-gray path.
+constexpr uint8_t A4_UC8279C_GRAY3_UP_LIGHT_FRAMES = 3;
+constexpr uint8_t A4_UC8279C_GRAY3_UP_DARK_EXTRA_FRAMES = 2;
+constexpr uint8_t A4_UC8279C_GRAY3_UP_DARK_SETTLE_FRAMES = 4;
+constexpr uint8_t A4_UC8279C_GRAY3_UP_NO_BLACK_GRAY = 0x09;
 
 }  // namespace freeink

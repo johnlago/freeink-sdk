@@ -78,10 +78,12 @@ black. The gray record is not stock's. It is the black record's 18 frames
 followed by `A4_UC8279C_GRAY3_GRAY_WHITE_FRAMES` of white drive, so a gray
 pixel is drawn black with the rest of the ink and lightened in the same
 refresh, from any previous level; more frames are lighter. With
-`setOverlayFullTone(true)` both overlay levels are gray: the gray record draws
-every new gray pixel at the darker level, and a short second refresh drives
-the lighter level's pixels white for
-`A4_UC8279C_GRAY3_LIGHT_EXTRA_WHITE_FRAMES` more. A cleanup request
+`setOverlayFullTone(true)` both overlay levels are gray and are built up from
+white (the EEGO Beta 7 method): the first refresh drives a new gray pixel
+black for `A4_UC8279C_GRAY3_UP_LIGHT_FRAMES` from white, and a short second
+refresh drives the dark level `A4_UC8279C_GRAY3_UP_DARK_EXTRA_FRAMES` further.
+A gray pixel that was darker before is cleared to white in the first refresh
+and built up again in the second. A cleanup request
 (non-FAST base) shows the page with black and white swapped, then the page
 itself. After a B/W screen or four-gray image there is no Gray3 history: a
 stashed base is shown first with a full B/W refresh, which clears the previous

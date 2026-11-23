@@ -114,5 +114,5 @@ inline void* heap_caps_malloc(size_t n, int) {
     subprocess.run([os.environ.get("CXX", "c++"), "-std=c++17", "-Wall", "-Wextra",
                     "-Wno-unused-parameter", "-I"+str(root), str(HERE / "test_uc8279c_a4.cpp"),
                     str(root / "driver/Uc8279cA4Driver.cpp"), "-o", str(exe)], check=True)
-    for failed_buffer in (1, 2):
+    for failed_buffer in (1, 2, 3):
         subprocess.run([str(exe), str(failed_buffer)], check=True)

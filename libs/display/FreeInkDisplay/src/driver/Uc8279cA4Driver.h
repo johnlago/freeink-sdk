@@ -25,8 +25,8 @@ class Uc8279cA4Driver : public PanelDriver {
   // and its gray masks go out as a transition from the previous Gray3 page, so
   // a page turn drives only the pixels that change, in one refresh. A page has
   // white, one gray and black: the dark overlay level is drawn black. With
-  // setOverlayFullTone(true) both overlay levels are gray, and a short second
-  // refresh lightens the light one.
+  // setOverlayFullTone(true) both overlay levels are gray, built up from
+  // white: a short second refresh darkens the dark one.
   // Absolute/direct planes (full images) use the stock four-gray waveform,
   // which drives every pixel from any prior state.
   GrayscaleCapabilities grayscaleCapabilities(GrayscaleMode mode = GrayscaleMode::Overlay) const override {
@@ -71,6 +71,11 @@ class Uc8279cA4Driver : public PanelDriver {
   void loadGray3LightenLut(EpdBus& bus);
   void sendGray3Plane(EpdBus& bus, bool dtm1, const uint8_t* codes);
   void loadGray3Lut(EpdBus& bus, bool anyBlack, bool anyWhiteClear);
+  // Two-gray pages built up from white (Beta 7 method): fills _gray3Code,
+  // _gray3Second and _gray3Lighten. use.lighten means a second refresh is needed.
+  void writeGray3PageUp(EpdBus& bus, bool inverted, Gray3Use& use);
+  void loadGray3UpLut(EpdBus& bus, bool anyBlack, bool anyWhiteClear);
+  void loadGray3UpDarkLut(EpdBus& bus);
   void fillControllerRam(EpdBus& bus, uint8_t command, uint8_t fill);
   void refresh(EpdBus& bus, const uint8_t* bwBaseline = nullptr, bool runIdleHook = false);
   // display() without ending the idle hook's lifetime, for use inside displayGray().
@@ -119,6 +124,8 @@ class Uc8279cA4Driver : public PanelDriver {
   // that are at the lighter level, and the second refresh's DTM2 plane.
   uint8_t* _gray3Light = nullptr;
   uint8_t* _gray3Lighten = nullptr;
+  // Two-gray pages: the second refresh's DTM1 plane.
+  uint8_t* _gray3Second = nullptr;
   bool _gray3HistoryValid = false;
   bool _gray3Session = false;  // controller is already set up and powered for Gray3
   void (*_idleHook)(void* ctx) = nullptr;

@@ -183,11 +183,11 @@ int main(int argc, char** argv) {
            "unchanged white/gray must hold, black re-driven");
     assert(bus.oldAtRefresh[physical0 + 1] == 0x00 && bus.newAtRefresh[physical0 + 1] == 0x00);
 
-    // Either optional allocation may fail. The single-gray page still reaches
+    // Any optional allocation may fail. The single-gray page still reaches
     // the panel, and the full-tone test below retries the missing buffer.
     driver.setOverlayFullTone(true);
     failOnAllocation = std::atoi(argv[1]);
-    assert(failOnAllocation == 1 || failOnAllocation == 2);
+    assert(failOnAllocation >= 1 && failOnAllocation <= 3);
     const auto beforeFallback = bus.refreshes;
     gray3Page(page.data(), RefreshMode::Fast);
     assert(failOnAllocation == 0 && bus.refreshes == beforeFallback + 1);
@@ -222,26 +222,26 @@ int main(int argc, char** argv) {
     msbMask[0] = savedMsb;
   }
   {
-    // Full tone: both overlay levels are gray. The gray record draws both
-    // (01); a second refresh then lightens the light one (code 01 again, with
-    // DTM1 all hold). The panel shows the previous block's page: bit 7 gray,
-    // the rest white.
+    // Full tone: both overlay levels are gray, built up from white. The gray
+    // record nudges both new grays (01); a second refresh drives the dark one
+    // the extra frames (10). The panel shows the previous block's page: bit 7
+    // gray, the rest white.
     driver.setOverlayFullTone(true);
     auto before = bus.refreshes;
     gray3Page(page.data(), RefreshMode::Fast);
-    assert(bus.refreshes == before + 2 && "a page with a new light pixel takes the second refresh");
+    assert(bus.refreshes == before + 2 && "a page with a new dark pixel takes the second refresh");
     assert(bus.oldAtPrevRefresh[physical0] == 0b11000000 && bus.newAtPrevRefresh[physical0] == 0b10110000 &&
            "gray -> white 11, black 10, both new grays 01");
-    assert(bus.oldAtRefresh[physical0] == 0x00 && bus.newAtRefresh[physical0] == 0b00010000 &&
-           "second refresh: only the light pixel is lightened");
-    assert(bus.lut23[1] == (0x80 | 2) && bus.lut20s.back()[1] == 2 + 4);
+    assert(bus.oldAtRefresh[physical0] == 0b00100000 && bus.newAtRefresh[physical0] == 0x00 &&
+           "second refresh: only the dark pixel is driven further");
+    assert(bus.lut23[1] == (0x40 | 3) && bus.lut20s.back()[1] == 3 + 2 + 4);
     // The same page again: both grays hold, one refresh.
     before = bus.refreshes;
     gray3Page(page.data(), RefreshMode::Fast);
     assert(bus.refreshes == before + 1 && bus.oldAtRefresh[physical0] == 0b01000000 &&
            bus.newAtRefresh[physical0] == 0x00);
-    // Back to one gray level: dark is black again (10) and the lightened
-    // pixel is redrawn at the single gray level (01).
+    // Back to one gray level: dark is black again (10) and the light pixel
+    // is redrawn at the single gray level (01).
     driver.setOverlayFullTone(false);
     before = bus.refreshes;
     gray3Page(page.data(), RefreshMode::Fast);
